@@ -1,0 +1,38 @@
+## create 1000 samples of exponential distributions containing 40 observations with a .2 lambda rate
+library(ggplot2)
+
+sampling.dist <- c()
+for(i in 1:1000){
+        sample <- rexp(40, .2)
+        sample.mean <- mean(sample)
+        sampling.dist <- append(sampling.dist, sample.mean)
+}
+
+## 1) show where sampling.dist is centered in comparison to theoretical center of distribution
+
+## convert sampling.dist into a dataframe with one column and 1,000 rows
+df.samp.dist <- data.frame(sampling.dist)
+names(df.samp.dist)[1] <- "obs"
+
+ggplot(df.samp.dist, aes(x = obs)) + geom_density() + geom_vline(aes(xintercept = mean(obs)), color = "blue",
+        linetype = "dashed", size = 1) + geom_vline(aes(xintercept = 1/.2), color = "red", linetype = "dashed", 
+        size = 1) + xlab("value") + ggtitle("Sampling distribution of 40 exponential(0.2), 
+        (blue line is sample mean, red line is population mean)")
+
+## mean of sampling distribution is:
+print(mean(df.samp.dist$obs))
+
+## mean of population is:
+print(1/.2)
+
+## 2) show how variable df.samp.dist is compared to theoretical variance
+
+## variance of sampling distribution is:
+print(var(df.samp.dist$obs))
+
+## variance of population is:
+print(1/.2)
+
+## 3) show that distribution is approximately normal
+## see density plot above
+

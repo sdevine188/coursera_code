@@ -1,0 +1,93 @@
+Project 2
+==========
+
+## 1) load ToothGrowth dataset and perform exploratory analysis
+```{r}
+library(ggplot2)
+library(plyr)
+
+tooth <- ToothGrowth
+tooth.agg2 <- aggregate(tooth$len, list(supp = tooth$supp, dose = tooth$dose), mean)
+names(tooth.agg2)[3] <- "len"
+ggplot(tooth.agg2, aes(x = dose, y = len, fill = supp)) + geom_bar(stat = "identity", position = position_dodge()) + 
+        ggtitle("Comparison of average len for OJ and VC doses")
+
+tooth.freq <- table(tooth$supp, tooth$dose)
+tooth.freq <- as.data.frame(tooth.freq)
+names(tooth.freq) <- c("supp", "dose", "frequency")
+ggplot(tooth.freq, aes(x = dose, y = frequency, fill = supp)) + geom_bar(stat = "identity", position = position_dodge()) + ggtitle("Frequency of dosage by supp")
+```        
+## 2) provide a basic summary of the data
+
+## summary function called on data
+```{r}
+summary(tooth)
+```
+
+## mean len for OJ and VC
+```{r}
+aggregate(tooth$len, list(supp = tooth$supp), mean)
+```
+
+## descriptive statistics for VC and OJ by dosage
+```{r}
+ddply(tooth, c("supp", "dose"), summarise, n = length(len), mean = mean(len), sd = sd(len), se = sd/sqrt(n))
+```
+
+## 3) use confidence intervals and hypothesis tests to compare tooth growth by supp and dose
+
+## compare mean length of VJ and OJ
+```{r}
+t.test(len ~ supp, data = tooth)
+```
+## since p-value is 0.06, we cannot reject the null hypothesis
+
+## compare mean length of dosages .5 and 1
+```{r}
+tooth.subset <- subset(tooth, tooth$dose != 2.0)
+t.test(len ~ dose, data = tooth.subset)
+```
+## can reject null hypothesis
+
+## compare mean length of dosages .5 and 2
+```{r}
+tooth.subset <- subset(tooth, tooth$dose != 1.0)
+t.test(len ~ dose, data = tooth.subset)
+```
+## can reject null hypothesis
+
+## compare mean length of dosages 1 and 2
+```{r}
+tooth.subset <- subset(tooth, tooth$dose != 0.5)
+t.test(len ~ dose, data = tooth.subset)
+```
+## can reject null hypothesis
+
+## compare mean length of dosage .5 for VC and OJ
+```{r}
+tooth.subset <- subset(tooth, tooth$dose == 0.5)
+t.test(len ~ supp, data = tooth.subset)
+```
+## can reject null hypothesis
+
+## compare mean length of dosage 1 for VC and OJ
+```{r}
+tooth.subset <- subset(tooth, tooth$dose == 1.0)
+t.test(len ~ supp, data = tooth.subset)
+```
+## can reject null hypothesis
+
+## compare mean length of dosage 2 for VC and OJ
+```{r}
+tooth.subset <- subset(tooth, tooth$dose == 2.0)
+t.test(len ~ supp, data = tooth.subset)
+```
+## cannot reject null hypothesis
+
+## 4) state conclusions and assumptions
+
+## the main finding is:
+## for dosages of .5 and 1, the mean of OJ is higher than the mean of VC, 
+## and the difference in means is both statistically and practically significant
+
+## the main assumption is that the observations in the ToothGrowth dataset are independent, and not paired

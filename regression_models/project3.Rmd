@@ -1,0 +1,52 @@
+**Regression Models Project**
+=========================
+
+# **Executive Summary:**
+
+Based on the results of an OLS regression using the mtcars dataset in R, there is no statistically significant
+impact of transmission type on miles per gallon (MPG).  The observed correlation of transmission type with MPG
+arises because of transmission's correlation with other variables, notably weight and horsepower.  
+
+# **Report:**
+
+This report analyzes that R dataset called "mtcars".  This data provides data on various automobiles from a 1974 issue of Motor Trend magazine.  Desciptive statistics for the data are provided in Figure 1 of the Appendix.  
+
+To a first approximation, there does appear to be a difference in MPG resulting from transmission type (see Figure 2).  The average MPG for manual transmission automobiles is higher than the average MPG for automatic transmission automobiles.  
+
+However, transmission is also correlated with several other values, which are in turn correlated with MPG, as well as each other (see Figure 3).  This complicates the analysis.
+
+Multiple regression analysis using OLS can help separate the effect of these other variables from the pure effect of transmission on MPG (see Figure 4).  The regression table in Figure 4 shows three distinct models.  The first includes only transmission as an explantory variable, the second includes transmission, horsepower, and weight, and the third includes all the variables in the dataset.  
+
+As can be seen in Figure 4, the adjusted R-squared is highest for the second model.  The second model finds that horsepower and weight are statistically significant, but transmission is not.  This indicates that the initial difference in MPG observed for automatic and manual transmission automobiles in the dataset was due to the correlation of tranmission with these other variables.  According to the model, on average, an increase of one gross horsepower is associated with a decrease of approximately 0.04 miles per gallon, holding weight and transmission constant.  The model also indicates that, on average, an increase of 1,000 lbs. is associated with a decrease of approximately 2.9 miles per gallon, holding horsepower and transmission constant.  Various diagnostics for the second model are shown in the Appendix - there does not appear to be any major issues.  The Variance Inflation Factor is below four for all three explanatory variables, and the average VIF is 2.7   The third model, including all covariates, does not find statistical significance, likely due to the high multicollinearity between the covariates. 
+
+
+# **Appendix**
+
+### *Figure 1*
+![Alt text](https://github.com/sdevine188/pandoc/raw/master/table1.jpg)
+
+### *Figure 2*
+```{r, echo = FALSE}
+am_scatter <- ggplot(data, aes(x = am, y = mpg, group = 1)) + geom_point(shape = 1) + 
+        geom_smooth(method = lm) + ggtitle("MPG and Transmission") + xlab("Transmission") +
+        ylab("MPG") 
+am_scatter
+```
+
+### *Figure 3*
+```{r, echo = FALSE}
+pairs(data)
+```
+
+### *Figure 4*
+![Alt text](https://github.com/sdevine188/pandoc/raw/master/models.jpg)
+
+### *Figure 5*
+```{r, echo = FALSE}
+plot(fit2, which = 1)
+```
+
+### *Figure 6*
+```{r, echo = FALSE}
+plot(fit2, which = 5)
+```
