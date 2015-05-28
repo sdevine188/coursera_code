@@ -383,6 +383,7 @@ install.packages("AppliedPredictiveModeling")
 library(AppliedPredictiveModeling)
 data(concrete)
 library(caret)
+library(Hmisc)
 set.seed(975)
 inTrain = createDataPartition(mixtures$CompressiveStrength, p = 3/4)[[1]]
 training = mixtures[ inTrain,]
@@ -472,7 +473,21 @@ pca1$sdev^2
 screeplot(pca1, type = "lines")
 biplot(pca1)
 
+## using pca1 from above, build ggbiplot instead of base graphics biplot - looks better with iris dataset
+## https://tgmstat.wordpress.com/2013/11/28/computing-and-visualizing-pca-in-r/
+library(devtools)
+install_github("ggbiplot", "vqv")
+library(ggbiplot)
+
+g <- ggbiplot(pca1, obs.scale = 1, var.scale = 1, ellipse = TRUE, circle = TRUE) + scale_color_discrete(name = '') + 
+        theme(legend.direction = 'horizontal', legend.position = 'top')
+print(g)
+
+## end ggbiplot
+
+## pre_proc tells you how the pc are built, ie how much each variable loads into the pc, ie each variable has a loading for each pc
 pre_proc <- preProcess(il_df[ , -13], method = "pca", pcaComp = 7)
+## predict gives you the actual predicted value for each pc for each obs, ie each obs has only one predicted value for each pc
 ildf_pc <- predict(pre_proc, il_df[ , -13])
 head(ildf_pc)
 pc_model_fit <- train(il_df$diagnosis ~ ., method = "glm", data = ildf_pc)
@@ -483,9 +498,20 @@ pc_model_fit$finalModel
 head(il_df_test)
 il_df_test <- testing[ , 58:69]
 il_df_test$diagnosis <- testing[ , "diagnosis"]
+## use the pre_proc from before as instructions for how to build each pc based on loadings for each variable, 
+## then based on that predict the actual pc for each test set obs
 pc_test <- predict(pre_proc, il_df_test[ , -13])
+## newly added - the lecture video combines this predict function with the confusionMatrix call
+## this predict function predicts the model (outcome ~ ., on the pc_test data, which are one value for each pc for each obs)
+pc_test_model_fit <- predict(pc_model_fit, pc_test)
+confusionMatrix(il_df_test$diagnosis, pc_test_model_fit)
+## below is the combined predict/confusionMatrix call from the lecture video
 confusionMatrix(il_df_test$diagnosis, predict(pc_model_fit, pc_test))
 
+## just for extra clarity
+pc_test_predictions <- predict(pc_model_fit, pc_test)
+
+## comparing two models
 fit1_predictions <- predict(fit1, newdata = il_df_test[ , -13])
 confusionMatrix(fit1_predictions, il_df_test$diagnosis)
 
