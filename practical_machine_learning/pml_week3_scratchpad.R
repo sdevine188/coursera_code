@@ -149,6 +149,11 @@ training <- iris[inTrain, ]
 testing <- iris[-inTrain, ]
 
 mod_fit <- train(Species ~ ., data = training, method = "rf", prox = TRUE)
+# another option for rf model that uses k-fold cross-validation instead of default bootstrap resampling
+# also limits k to 3, instead of default 10
+# this can speed up rf model processing time (I think)
+# for more, see http://topepo.github.io/caret/training.html#control
+# mod_fit <- train(Species ~ ., data = training, method = "rf", trControl = trainControl(method = "cv"), number = 3)
 mod_fit
 ## in mod_fit output, the "mtry" column of the tuning parameters is the index number of the random tree it built (i think)
 ## can look at specific tree, for instance the second tree (mtry = 2)
@@ -233,7 +238,7 @@ fancyRpartPlot(mod_fit_rpart$finalModel)
 
 pred_rpart <- predict(mod_fit_rpart, newdata = testing)
 testing$pred <- pred_rpart
-testing$pred_right <- testing$pred == testing$Case
+testing$pred_right <- testing$pred == testing$Class
 table(testing$pred_right)
 
 ## Q2
