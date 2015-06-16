@@ -141,6 +141,9 @@ for(i in 1:10){
 ## random forests is extension of bagging - you also bootstrap resample your training data, predict the model, then avg the models
 ## but the difference is that on each resampling of the training data, you sample only a random subset of the variables
 ## this produces many random regression trees, and the final model is an avg of these many tree model predictions
+
+# random forest in layman's terms http://www.quora.com/Random-Forests/How-do-random-forests-work-in-laymans-terms
+
 data(iris)
 library(ggplot2)
 library(caret)
@@ -151,13 +154,25 @@ testing <- iris[-inTrain, ]
 mod_fit <- train(Species ~ ., data = training, method = "rf", prox = TRUE)
 # another option for rf model that uses k-fold cross-validation instead of default bootstrap resampling
 # also limits k to 3, instead of default 10
+# also limits ntree from default of 500 to 10
+# for info on ntree and mtry
+# see http://stackoverflow.com/questions/13956435/setting-values-for-ntree-and-mtry-for-random-forest-regression-model
 # this can speed up rf model processing time (I think)
 # for more, see http://topepo.github.io/caret/training.html#control
-# mod_fit <- train(Species ~ ., data = training, method = "rf", trControl = trainControl(method = "cv"), number = 3)
+# mod_fit <- train(Species ~ ., data = training, method = "rf", trControl = trainControl(method = "cv"), number = 3, ntree = 10)
 mod_fit
+
 ## in mod_fit output, the "mtry" column of the tuning parameters is the index number of the random tree it built (i think)
 ## can look at specific tree, for instance the second tree (mtry = 2)
+# how to read getTree output
+# http://stackoverflow.com/questions/14996619/random-forest-output-interpretation
 getTree(mod_fit$finalModel, k = 2) 
+
+# info on rf variable importance
+# two methods: Out-of-Bag error rate, and decrease in node impurities when split on variable (intuitive) 
+# for decrease in impurity method, RSS is used for regression rf, and Gini index decrease used for classification rf
+# http://stats.stackexchange.com/questions/95839/gini-decrease-and-gini-impurity-of-children-nodes
+?importance
 
 ## can plot the "class centers" of outcome variable on an x-y plot of two predictor variables
 irisP <- classCenter(training[ , c(3, 4)], training$Species, mod_fit$finalModel$prox)
