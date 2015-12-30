@@ -1,0 +1,42 @@
+**Data Science Capstone Milestone Report**
+=========================
+
+# Exploratory Analysis
+
+```{r}
+# set working directory
+setwd("C:/Users/Stephen/Desktop/R/coursera_code/capstone")
+
+# call libraries
+library(stringr)
+library(tm)
+```
+
+
+```{r, cache = TRUE}
+# create corpus
+corpus_file <- "C:/Users/Stephen/Desktop/R/coursera_code/capstone/en_US"
+dir(corpus_file)   
+list.files(corpus_file)
+
+corpus <- Corpus(DirSource(corpus_file))
+corpus
+summary(corpus)
+```
+
+```{r, cache = TRUE}
+# clean corpus
+corpus <- tm_map(corpus, removeNumbers)
+corpus <- tm_map(corpus, removePunctuation)
+corpus <- tm_map(corpus , stripWhitespace)
+corpus <- tm_map(corpus, content_transformer(tolower))
+corpus <- tm_map(corpus, removeWords, stopwords("english"))  
+corpus <- tm_map(corpus, stemDocument, language = "english")
+```
+
+```{r}
+# create term-document matrix
+tdm <- TermDocumentMatrix(corpus)  
+
+
+
