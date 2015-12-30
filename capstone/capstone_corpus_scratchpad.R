@@ -2,6 +2,7 @@ library(tm)
 library(SnowballC)
 library(stringr)
 library(dplyr)
+library(ggplot2)
 
 setwd("C:/Users/Stephen/Desktop/R/coursera_code/capstone")
 
@@ -112,4 +113,25 @@ news_trigram_freq <- data.frame(term = rownames(news_trigram_tdm_row_sums), freq
 rownames(news_trigram_freq) <- NULL
 news_trigram_freq <- arrange(news_trigram_freq, desc(freq))
 head(news_trigram_freq)
+
+# graph frequency of ngrams
+# unigram bar chart
+news_unigram_bar <- ggplot(data = news_freq[1:50, ], aes(x = reorder(term, freq), y = freq, fill = freq)) + 
+        geom_bar(color = "black", stat = "identity") +
+        coord_flip() + scale_fill_gradient(low = "lightskyblue", high = "darkblue")
+
+# bigram bar chart
+news_bigram_bar <- ggplot(data = news_bigram_freq[1:50, ], aes(x = reorder(term, freq), y = freq, fill = freq)) + 
+        geom_bar(color = "black", stat = "identity") +
+        coord_flip() + scale_fill_gradient(low = "lightskyblue", high = "darkblue")
+
+# trigram bar chart
+news_trigram_bar <- ggplot(data = news_trigram_freq[1:50, ], aes(x = reorder(term, freq), y = freq, fill = freq)) + 
+        geom_bar(color = "black", stat = "identity") +
+        coord_flip() + scale_fill_gradient(low = "lightskyblue", high = "darkblue")
+
+# find most frequent ngrams for test phrases
+test1 <- news_trigram_freq[grep("^the best ", news_trigram_freq$term), ]
+
+
 
