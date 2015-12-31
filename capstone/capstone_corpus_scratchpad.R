@@ -3,6 +3,7 @@ library(SnowballC)
 library(stringr)
 library(dplyr)
 library(ggplot2)
+library(textir)
 
 setwd("C:/Users/Stephen/Desktop/R/coursera_code/capstone")
 
@@ -93,10 +94,10 @@ inspect(news_bigram_tdm)
 inspect(news_bigram_tdm[1000:1050, 1:10])
 news_bigram_tdm_row_sums <- as.matrix(slam::row_sums(news_bigram_tdm, na.rm=TRUE))
 # convert to a dataframe
-news_bigram_freq <- data.frame(term = rownames(news_bigram_tdm_row_sums), freq = news_bigram_tdm_row_sums[, 1])
-rownames(news_bigram_freq) <- NULL
-news_bigram_freq <- arrange(news_bigram_freq, desc(freq))
-head(news_bigram_freq)
+news_tdm_tfidf  <- data.frame(term = rownames(news_bigram_tdm_row_sums), freq = news_bigram_tdm_row_sums[, 1])
+rownames(news_tdm_tfidf ) <- NULL
+news_tdm_tfidf  <- arrange(news_tdm_tfidf , desc(freq))
+head(news_tdm_tfidf )
 
 # create trigram tdm
 trigramTokenizer <- function(x) {
@@ -121,7 +122,7 @@ news_unigram_bar <- ggplot(data = news_freq[1:50, ], aes(x = reorder(term, freq)
         coord_flip() + scale_fill_gradient(low = "lightskyblue", high = "darkblue")
 
 # bigram bar chart
-news_bigram_bar <- ggplot(data = news_bigram_freq[1:50, ], aes(x = reorder(term, freq), y = freq, fill = freq)) + 
+news_bigram_bar <- ggplot(data = news_tdm_tfidf [1:50, ], aes(x = reorder(term, freq), y = freq, fill = freq)) + 
         geom_bar(color = "black", stat = "identity") +
         coord_flip() + scale_fill_gradient(low = "lightskyblue", high = "darkblue")
 
@@ -133,5 +134,32 @@ news_trigram_bar <- ggplot(data = news_trigram_freq[1:50, ], aes(x = reorder(ter
 # find most frequent ngrams for test phrases
 test1 <- news_trigram_freq[grep("^the best ", news_trigram_freq$term), ]
 
+# highest tf-idf terms
+news_keywords <- tfidf(news_dtm)
+head(news_keywords)
+news_keywords
 
+news_tdm_tfidf <- TermDocumentMatrix(news_corpus2, 
+                control = list(weighting = weightTfIdf))
+inspect(news_tdm_tfidf[82500:82600, 1:10])
+inspect(news_tdm_tfidf[25307:25307, 1:10000])
 
+# get freq matrix with weighting by freq
+news_tdm_row_sums <- as.matrix(slam::row_sums(news_tdm, na.rm=TRUE))
+
+# convert to a dataframe
+news_tdm_tfidf_row_sums <- as.matrix(slam::row_sums(news_tdm_tfidf, na.rm=TRUE))
+news_tdm_tfidf_row_mean <- as.matrix(slam::row_sums(news_tdm_tfidf, na.rm=TRUE) / length(news_corpus2))
+
+news_tfidf  <- data.frame(term = rownames(news_tdm_tfidf_row_sums), sum = news_tdm_tfidf_row_sums[ , 1], 
+                          freq = news_tdm_row_sums[ , 1])
+news_tfidf$avg <- news_tfidf$sum / news_tfidf$freq
+
+# for some reason about 10% of terms have tf-idf score > 1
+rownames(news_tfidf) <- NULL
+news_tfidf  <- arrange(news_tfidf , desc(avg))
+head(news_tfidf, 10)
+
+news_tfidf$term[which(news_tfidf$avg > 1)]
+unique(news_tfidf$freq[which(news_tfidf$avg > 1)])
+filter(news_tfidf, term == "earplugs")
