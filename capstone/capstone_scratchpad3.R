@@ -109,6 +109,8 @@ twitter_bigram  <- arrange(twitter_bigram, desc(freq))
 head(twitter_bigram)
 write_csv(twitter_bigram, "twitter_bigram.csv")
 
+twitter_bigram <- read_csv("twitter_bigram.csv")
+
 # create trigram tdm for twitter_corpus
 trigramTokenizer <- function(x) {
         unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
@@ -120,6 +122,8 @@ rownames(twitter_trigram) <- NULL
 twitter_trigram  <- arrange(twitter_trigram, desc(freq))
 head(twitter_trigram)
 write_csv(twitter_trigram, "twitter_trigram.csv")
+
+twitter_trigram <- read_csv("twitter_trigram.csv")
 
 # create a bigram tdm for blogs_corpus
 BigramTokenizer <- function(x) {
@@ -136,6 +140,8 @@ blogs_bigram  <- arrange(blogs_bigram, desc(freq))
 head(blogs_bigram)
 write_csv(blogs_bigram, "blogs_bigram.csv")
 
+blogs_bigram <- read_csv("blogs_bigram.csv")
+
 # create trigram tdm for blogs_corpus
 trigramTokenizer <- function(x) {
         unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
@@ -147,6 +153,8 @@ rownames(blogs_trigram) <- NULL
 blogs_trigram  <- arrange(blogs_trigram, desc(freq))
 head(blogs_trigram)
 write_csv(blogs_trigram, "blogs_trigram.csv")
+
+blogs_trigram <- read_csv("blogs_trigram.csv")
 
 # create a bigram tdm for news_corpus
 BigramTokenizer <- function(x) {
@@ -163,6 +171,8 @@ news_bigram  <- arrange(news_bigram, desc(freq))
 head(news_bigram)
 write_csv(news_bigram, "news_bigram.csv")
 
+news_bigram <- read_csv("news_bigram.csv")
+
 # create trigram tdm for news_corpus
 trigramTokenizer <- function(x) {
         unlist(lapply(ngrams(words(x), 3), paste, collapse = " "), use.names = FALSE)
@@ -174,3 +184,101 @@ rownames(news_trigram) <- NULL
 news_trigram  <- arrange(news_trigram, desc(freq))
 head(news_trigram)
 write_csv(news_trigram, "news_trigram.csv")
+
+news_trigram <- read_csv("news_trigram.csv")
+
+# merge bigrams
+# check for matches btw twitter and blogs
+blogs_match_index <- which(blogs_bigram$term %in% twitter_bigram$term)
+blogs_match <- blogs_bigram[blogs_match_index, ]
+blogs_match$freq <- as.numeric(blogs_match$freq)
+twitter_match_index <- which(twitter_bigram$term %in% blogs_match$term)
+twitter_match <- twitter_bigram[twitter_match_index, ]
+twitter_match$freq <- as.numeric(twitter_match$freq)
+
+# sum the frequency of blogs and twitter bigram matches
+bt_match <- left_join(blogs_match, twitter_match, by = "term")
+bt_match$freq <- sapply(1:nrow(bt_match), function(x) sum(bt_match$freq.x[x], bt_match$freq.y[x]))
+bt_match <- select(bt_match, term, freq)
+
+bigram <- bt_match
+
+# rbind twitter with the blogs bigrams not already included in twitter
+unique_blogs_bigram <- blogs_bigram[-blogs_match_index, ]
+unique_twitter_bigram <- twitter_bigram[-twitter_match_index, ]
+
+bigram <- rbind(bigram, unique_blogs_bigram)
+bigram <- rbind(bigram, unique_twitter_bigram)
+
+# check for matches btw bigram and news
+news_match_index <- which(news_bigram$term %in% bigram$term)
+news_match <- news_bigram[news_match_index, ]
+news_match$freq <- as.numeric(news_match$freq)
+bigram_match_index <- which(bigram$term %in% news_match$term)
+bigram_match <- bigram[bigram_match_index, ]
+bigram_match$freq <- as.numeric(bigram_match$freq)
+
+# sum the frequency of news and bigram bigram matches
+nt_match <- left_join(news_match, bigram_match, by = "term")
+nt_match$freq <- sapply(1:nrow(nt_match), function(x) sum(nt_match$freq.x[x], nt_match$freq.y[x]))
+nt_match <- select(nt_match, term, freq)
+
+bigram <- nt_match
+
+# rbind bigram with the news bigrams not already included in bigram
+unique_news_bigram <- news_bigram[-news_match_index, ]
+unique_bigram <- bigram[-bigram_match_index, ]
+
+bigram <- rbind(bigram, unique_news_bigram)
+bigram <- rbind(bigram, unique_bigram)
+bigram <- arrange(bigram, desc(freq))
+
+write_csv(bigram, "bigram.csv")
+
+# merge trigrams
+# check for matches btw twitter and blogs
+blogs_match_index <- which(blogs_trigram$term %in% twitter_trigram$term)
+blogs_match <- blogs_trigram[blogs_match_index, ]
+blogs_match$freq <- as.numeric(blogs_match$freq)
+twitter_match_index <- which(twitter_trigram$term %in% blogs_match$term)
+twitter_match <- twitter_trigram[twitter_match_index, ]
+twitter_match$freq <- as.numeric(twitter_match$freq)
+
+# sum the frequency of blogs and twitter trigram matches
+bt_match <- left_join(blogs_match, twitter_match, by = "term")
+bt_match$freq <- sapply(1:nrow(bt_match), function(x) sum(bt_match$freq.x[x], bt_match$freq.y[x]))
+bt_match <- select(bt_match, term, freq)
+
+trigram <- bt_match
+
+# rbind twitter with the blogs trigrams not already included in twitter
+unique_blogs_trigram <- blogs_trigram[-blogs_match_index, ]
+unique_twitter_trigram <- twitter_trigram[-twitter_match_index, ]
+
+trigram <- rbind(trigram, unique_blogs_trigram)
+trigram <- rbind(trigram, unique_twitter_trigram)
+
+# check for matches btw trigram and news
+news_match_index <- which(news_trigram$term %in% trigram$term)
+news_match <- news_trigram[news_match_index, ]
+news_match$freq <- as.numeric(news_match$freq)
+trigram_match_index <- which(trigram$term %in% news_match$term)
+trigram_match <- trigram[trigram_match_index, ]
+trigram_match$freq <- as.numeric(trigram_match$freq)
+
+# sum the frequency of news and trigram trigram matches
+nt_match <- left_join(news_match, trigram_match, by = "term")
+nt_match$freq <- sapply(1:nrow(nt_match), function(x) sum(nt_match$freq.x[x], nt_match$freq.y[x]))
+nt_match <- select(nt_match, term, freq)
+
+trigram <- nt_match
+
+# rbind trigram with the news trigrams not already included in trigram
+unique_news_trigram <- news_trigram[-news_match_index, ]
+unique_trigram <- trigram[-trigram_match_index, ]
+
+trigram <- rbind(trigram, unique_news_trigram)
+trigram <- rbind(trigram, unique_trigram)
+trigram <- arrange(trigram, desc(freq))
+
+write_csv(trigram, "trigram.csv")
