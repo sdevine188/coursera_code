@@ -1,0 +1,33 @@
+Word Prediction Application
+
+Coursera Data Science Capstone
+========================================================
+author: Stephen Devine
+date: January 3, 2016
+
+Motivation
+========================================================
+
+The goal of the final project for the Coursera Data Science Capstone class is to build a Shiny application that runs a word prediction model.  
+
+This model should function similar to SwiftKey's smart keyboards, in that it can take a text string input from a user, which the model will use to output the most likely next word in the text string.
+
+Data
+========================================================
+The data used to for this project come from the HC Corpora collection of English language text strings from Twitter tweets, blog entries, and online news clips.
+
+- Capstone Dataset: https://d396qusza40orc.cloudfront.net/dsscapstone/dataset/Coursera-SwiftKey.zip
+- HC Corpora website: http://www.corpora.heliohost.org/
+- HC Corpora readme: http://www.corpora.heliohost.org/aboutcorpus.html
+
+Prediction Model
+========================================================
+The prediction model is built by using R's tm package to create a list of the most frequent unigrams, bigrams, and trigram in a sample of the data (100k strings from each of twitter, blogs, and news).  
+
+When a user inputs a text string, the model matches the string to the corresponding unigram/bigram, and then predicts the next word in the string based on the most frequent bigram/trigram 
+
+Application
+========================================================
+The prediction model is built into a Shiny application, which is available at https://sdevine188.shinyapps.io/capstone_app/ . 
+
+To use the app, just enter a text string in the text input field on the left, and then click the "Predict next word" button.  The model will then predict the most likely next word in the string, based on the most frequent ngrams in the HC Corpora dataset.
