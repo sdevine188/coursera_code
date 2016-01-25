@@ -282,3 +282,4 @@ trigram <- rbind(trigram, unique_trigram)
 trigram <- arrange(trigram, desc(freq))
 
 write_csv(trigram, "trigram.csv")
+
